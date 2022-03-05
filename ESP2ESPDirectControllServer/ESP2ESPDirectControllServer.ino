@@ -62,8 +62,10 @@ void loop(){
         TCP_Client.flush();
         TCP_SERVER.flush();
         conn = TCP_Client.connected();
+        if(!conn) ESP.restart();
       }
       conn = TCP_Client.connected();
+      if(!conn) ESP.restart();
     }
        
   }
