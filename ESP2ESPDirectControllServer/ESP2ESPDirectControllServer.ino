@@ -18,6 +18,10 @@
 //------------------------------------------------------------------------------------
   // Some Variables
   char result[10];
+  bool heartBeat = true;
+  unsigned long previousMillis = 0;
+  const long interval = 3000;
+  int count = 0;
 
   //char *data = "Hello my name is parvaiz ahmad, I am sending this huge amount of data just to confirm that either this amount of data transfers successfully or not.";
 void setup(){
@@ -39,12 +43,14 @@ void setup(){
  
 void loop(){
   WiFiClient TCP_Client = TCP_SERVER.available();
-  if(TCP_Client){      // TCP_SERVER.hasClient()
-    
+  if(TCP_Client)  // TCP_SERVER.hasClient()
+  {
     TCP_Client.setNoDelay(1);
     bool conn = TCP_Client.connected();
-    while(conn){
-      if(TCP_Client.available()){
+    while(conn)
+    {
+      if(TCP_Client.available())
+      {
         String Message = TCP_Client.readStringUntil('\n');
         Serial.println(Message);
         if(Message.toInt() == 0)
@@ -59,17 +65,34 @@ void loop(){
           digitalWrite(LED1, HIGH);
         }
 
-        TCP_Client.flush();
-        TCP_SERVER.flush();
-        conn = TCP_Client.connected();
-        if(!conn) ESP.restart();
+        if(Message.toInt() == 2)
+        {
+          heartBeat = true;
+          count = 0;
+          Serial.println("Hearbeat Received.");
+        }
       }
       conn = TCP_Client.connected();
-      if(!conn) ESP.restart();
-    }
-       
+      count++;
+      if(count > 10000) 
+      {
+        heartBeat = false;
+      }
+      unsigned long currentMillis = millis();
+      if (currentMillis - previousMillis >= interval) {
+        previousMillis = currentMillis;
+        if(heartBeat == false) 
+        {
+          Serial.print("Heart beat not received, Restarting server.");
+          ESP.restart();
+        }
+      }
+      delay(1);
+    }  
   }
-  else{
+  else
+  {
+    
     // the LED blinks if no clients are available
     digitalWrite(LED0, HIGH);
     delay(150);

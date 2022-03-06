@@ -24,6 +24,9 @@
   // Some Variables
   unsigned char buffer[80];
   char result[10];
+  String heartBeat = "2";
+  unsigned long previousMillis = 0;
+  const long interval = 1000;
 
 //====================================================================================
 
@@ -43,6 +46,12 @@ void setup(){
 //====================================================================================
  
 void loop(){
+
+  unsigned long currentMillis = millis();
+  if (currentMillis - previousMillis >= interval) {
+    previousMillis = currentMillis;
+    TCP_Client.println(heartBeat);
+  }
 
   if(digitalRead(button))
   {
@@ -71,7 +80,7 @@ void Send_Request_To_Server() {
   unsigned long tNow;
   TCP_Client.println(buttonstate);                             // Send Data                    
 
-  TCP_Client.flush();                                     // Empty Bufffer 
+  TCP_Client.flush(); 
   Check_WiFi_and_Connect_or_Reconnect();
 }
 
